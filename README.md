@@ -6,4 +6,4 @@ Execute a deposit or withdraw function against the ropsten vault contract.
 ```node index.js --action deposit```
 
 ## Withdraw
-```node index.js --action withdraw --depositId 4```
+```node index.js --action withdraw --depositId <deposit-id>```
