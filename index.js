@@ -16,7 +16,7 @@ const usage = commandLineUsage([
       {
         name: 'action',
         type: String,
-        description: 'deposit/withdraw',
+        description: 'deposit/withdraw/claim',
       },
       {
         name: 'depositId',
@@ -79,6 +79,9 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
     case 'deposit':
       await deposit();
       break;
+    case 'claim':
+      await claim();
+      break;
     default:
       console.log(usage);
   }
@@ -131,5 +134,11 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
     ).wait();
 
     console.log('withdraw transaction mined');
+  }
+
+  async function claim() {
+    await (await vaultContract.claimYield(walletAddress)).wait();
+
+    console.log('claimYield transaction mined');
   }
 })();
