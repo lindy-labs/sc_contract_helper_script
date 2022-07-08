@@ -3,7 +3,7 @@ const commandLineUsage = require('command-line-usage');
 const commandLineArgs = require('command-line-args');
 const { parseUnits } = require('ethers/lib/utils');
 const vaultABI = require('./abis/vault.json');
-const ustABI = require('./abis/ust.json');
+const erc20ABI = require('./abis/erc20.json');
 const feedABI = require('./abis/mockPriceFeed.json');
 
 const usage = commandLineUsage([
@@ -60,7 +60,7 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
 (async () => {
   const walletAddress = await wallet.getAddress();
 
-  const ustContract = new Contract(process.env.UST_ADDRESS, ustABI, wallet);
+  const underlyingContract = new Contract(process.env.UNDERLYING_ADDRESS, erc20ABI, wallet);
   const vaultContract = new Contract(process.env.VAULT_ADDRESS, vaultABI, wallet);
   const feedContract = new Contract(process.env.FEED_ADDRESS, feedABI, wallet);
 
@@ -89,19 +89,24 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
   provider.destroy();
 
   async function deposit() {
-    await (await ustContract.approve(process.env.VAULT_ADDRESS, parseUnits('1000', 18))).wait();
+    await (await underlyingContract.approve(process.env.VAULT_ADDRESS, parseUnits('1000', 18))).wait();
 
     console.log('approve transaction mined');
 
     await (await vaultContract.deposit({
         amount: parseUnits('1000', 18),
-        inputToken: process.env.UST_ADDRESS,
+        inputToken: underlyingContract.address,
         lockDuration: 1,
         claims: [
           {
             beneficiary: walletAddress,
-            pct: 10000,
+            pct: 1000,
             data: 0,
+          },
+          {
+            beneficiary: walletAddress,
+            pct: 9000,
+            data: 0x46E0B937,
           },
         ],
         name: '0xrin test foundation',
