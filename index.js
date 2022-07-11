@@ -9,8 +9,10 @@ const feedABI = require('./abis/mockPriceFeed.json');
 const usage = commandLineUsage([
   {
     header: 'Backend deposit/withdrawal helper',
-    content: 'Backend application to assist with deposit/withdrawal calls on the Sandclock Vault contract',
-  }, {
+    content:
+      'Backend application to assist with deposit/withdrawal calls on the Sandclock Vault contract',
+  },
+  {
     header: 'Options',
     optionList: [
       {
@@ -60,16 +62,22 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
 (async () => {
   const walletAddress = await wallet.getAddress();
 
-  const underlyingContract = new Contract(process.env.UNDERLYING_ADDRESS, erc20ABI, wallet);
-  const vaultContract = new Contract(process.env.VAULT_ADDRESS, vaultABI, wallet);
+  const underlyingContract = new Contract(
+    process.env.UNDERLYING_ADDRESS,
+    erc20ABI,
+    wallet,
+  );
+  const vaultContract = new Contract(
+    process.env.VAULT_ADDRESS,
+    vaultABI,
+    wallet,
+  );
   const feedContract = new Contract(process.env.FEED_ADDRESS, feedABI, wallet);
 
   switch (options.action) {
     case 'withdraw':
       if (options.depositId) {
-        await withdraw(
-          [parseInt(options.depositId)]
-        );
+        await withdraw([parseInt(options.depositId)]);
 
         break;
       }
@@ -82,6 +90,12 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
     case 'claim':
       await claim();
       break;
+    case 'generateYield':
+      await generateYield();
+      break;
+    case 'claimYield':
+      await claimYield();
+      break;
     default:
       console.log(usage);
   }
@@ -89,11 +103,17 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
   provider.destroy();
 
   async function deposit() {
-    await (await underlyingContract.approve(process.env.VAULT_ADDRESS, parseUnits('1000', 18))).wait();
+    await (
+      await underlyingContract.approve(
+        process.env.VAULT_ADDRESS,
+        parseUnits('1000', 18),
+      )
+    ).wait();
 
     console.log('approve transaction mined');
 
-    await (await vaultContract.deposit({
+    await (
+      await vaultContract.deposit({
         amount: parseUnits('1000', 18),
         inputToken: underlyingContract.address,
         lockDuration: 1,
@@ -106,14 +126,33 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
           {
             beneficiary: await vaultContract.treasury(),
             pct: 9000,
-            data: 0x46E0B937,
+            data: 0x46e0b937,
           },
         ],
-        name: '0xrin test foundation',
-      }
-    )).wait();
+        name: 'deposit-withdraw script test foundation',
+      })
+    ).wait();
 
     console.log('deposit transaction mined');
+  }
+
+  async function generateYield() {
+    await (
+      await underlyingContract.mint(
+        vaultContract.address,
+        parseUnits('2000', 18),
+      )
+    ).wait();
+
+    console.log('generateYield transaction mined');
+  }
+
+  async function claimYield() {
+    await (
+      await vaultContract.claimYield(await vaultContract.treasury())
+    ).wait();
+
+    console.log('claimYield transaction mined');
   }
 
   async function withdraw(depositIds) {
@@ -121,21 +160,22 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
 
     roundId += 1;
 
-    await (await feedContract.setLatestRoundData(
-      roundId,
-      '1500000000000000000',
-      0,
-      roundId,
-      roundId,
-    )).wait();
+    await (
+      await feedContract.setLatestRoundData(
+        roundId,
+        '1500000000000000000',
+        0,
+        roundId,
+        roundId,
+      )
+    ).wait();
 
     console.log('mock price feed round data transaction mined');
 
-    await (await vaultContract.partialWithdraw(
-        walletAddress,
-        depositIds,
-        [parseUnits('150')],
-      )
+    await (
+      await vaultContract.partialWithdraw(walletAddress, depositIds, [
+        parseUnits('150'),
+      ])
     ).wait();
 
     console.log('withdraw transaction mined');

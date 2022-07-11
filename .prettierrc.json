@@ -1,0 +1,22 @@
+{
+  "overrides": [
+    {
+      "files": ["*.js", "*.ts"],
+      "options": {
+        "tabWidth": 2,
+        "singleQuote": true,
+        "useTabs": false,
+        "trailingComma": "all",
+        "semi": true
+      }
+    },
+    {
+      "files": ["*.json", "*.yaml"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false,
+        "trailingComma": "none"
+      }
+    }
+  ]
+}
