@@ -104,7 +104,7 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
             data: 0,
           },
           {
-            beneficiary: walletAddress,
+            beneficiary: await vaultContract.treasury(),
             pct: 9000,
             data: 0x46E0B937,
           },
