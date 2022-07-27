@@ -4,7 +4,6 @@ const commandLineArgs = require('command-line-args');
 const { parseUnits } = require('ethers/lib/utils');
 const vaultABI = require('./abis/vault.json');
 const erc20ABI = require('./abis/erc20.json');
-const feedABI = require('./abis/mockPriceFeed.json');
 
 const usage = commandLineUsage([
   {
@@ -72,7 +71,6 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
     vaultABI,
     wallet,
   );
-  const feedContract = new Contract(process.env.FEED_ADDRESS, feedABI, wallet);
 
   switch (options.action) {
     case 'withdraw':
@@ -156,22 +154,6 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
   }
 
   async function withdraw(depositIds) {
-    let roundId = (await feedContract.latestRoundData()).roundId.toNumber();
-
-    roundId += 1;
-
-    await (
-      await feedContract.setLatestRoundData(
-        roundId,
-        '1500000000000000000',
-        0,
-        roundId,
-        roundId,
-      )
-    ).wait();
-
-    console.log('mock price feed round data transaction mined');
-
     await (
       await vaultContract.partialWithdraw(walletAddress, depositIds, [
         parseUnits('150'),
