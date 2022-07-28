@@ -1,4 +1,4 @@
-const { ethers, Contract, Wallet } = require('ethers');
+const { ethers, Contract, Wallet, BigNumber } = require('ethers');
 const commandLineUsage = require('command-line-usage');
 const commandLineArgs = require('command-line-args');
 const { parseUnits } = require('ethers/lib/utils');
@@ -128,6 +128,7 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
           },
         ],
         name: 'deposit-withdraw script test foundation',
+        slippage: BigNumber.from('1'),
       })
     ).wait();
 
