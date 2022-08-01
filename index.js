@@ -17,7 +17,7 @@ const usage = commandLineUsage([
       {
         name: 'action',
         type: String,
-        description: 'deposit/withdraw/claim',
+        description: 'deposit/withdraw/claim/generateYield/claimYield',
       },
       {
         name: 'depositId',
