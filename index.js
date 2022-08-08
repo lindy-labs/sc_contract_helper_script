@@ -110,22 +110,21 @@ const testWallet = Wallet.fromMnemonic(process.env.TEST_MNEMONIC).connect(
 
   async function deposit() {
     await (
-      await underlyingContract.approve(
-        process.env.VAULT_ADDRESS,
-        parseUnits('1000', 18),
-      )
+      await underlyingContract
+        .connect(testWallet)
+        .approve(process.env.VAULT_ADDRESS, parseUnits('1000', 18))
     ).wait();
 
     console.log('approve transaction mined');
 
     await (
-      await vaultContract.deposit({
+      await vaultContract.connect(testWallet).deposit({
         amount: parseUnits('1000', 18),
         inputToken: underlyingContract.address,
         lockDuration: 1,
         claims: [
           {
-            beneficiary: walletAddress,
+            beneficiary: testWalletAddress,
             pct: 1000,
             data: 0,
           },
@@ -156,7 +155,9 @@ const testWallet = Wallet.fromMnemonic(process.env.TEST_MNEMONIC).connect(
 
   async function claimYield() {
     await (
-      await vaultContract.claimYield(await vaultContract.treasury())
+      await vaultContract
+        .connect(testWallet)
+        .claimYield(await vaultContract.treasury())
     ).wait();
 
     console.log('claimYield transaction mined');
@@ -164,9 +165,9 @@ const testWallet = Wallet.fromMnemonic(process.env.TEST_MNEMONIC).connect(
 
   async function withdraw(depositIds) {
     await (
-      await vaultContract.partialWithdraw(walletAddress, depositIds, [
-        parseUnits('150'),
-      ])
+      await vaultContract
+        .connect(testWallet)
+        .partialWithdraw(testWalletAddress, depositIds, [parseUnits('150')])
     ).wait();
 
     console.log('withdraw transaction mined');
