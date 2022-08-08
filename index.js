@@ -56,10 +56,15 @@ if (options.help) {
 let provider = new ethers.providers.WebSocketProvider(process.env.RPC_URL, {
   chainId: 3,
 });
+
 const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
+const testWallet = Wallet.fromMnemonic(process.env.TEST_MNEMONIC).connect(
+  provider,
+);
 
 (async () => {
   const walletAddress = await wallet.getAddress();
+  const testWalletAddress = await testWallet.getAddress();
 
   const underlyingContract = new Contract(
     process.env.UNDERLYING_ADDRESS,
@@ -94,6 +99,8 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
     case 'claimYield':
       await claimYield();
       break;
+    case 'fundTestWallet':
+      await fundTestWallet();
     default:
       console.log(usage);
   }
@@ -168,5 +175,13 @@ const wallet = Wallet.fromMnemonic(process.env.MNEMONIC).connect(provider);
     await (await vaultContract.claimYield(walletAddress)).wait();
 
     console.log('claimYield transaction mined');
+  }
+
+  async function fundTestWallet() {
+    await (
+      await underlyingContract.mint(testWalletAddress, parseUnits('10000', 18))
+    ).wait();
+
+    console.log('fundTestWallet transaction mined');
   }
 })();
