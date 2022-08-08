@@ -101,6 +101,7 @@ const testWallet = Wallet.fromMnemonic(process.env.TEST_MNEMONIC).connect(
       break;
     case 'fundTestWallet':
       await fundTestWallet();
+      break;
     default:
       console.log(usage);
   }
